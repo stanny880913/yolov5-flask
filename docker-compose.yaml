@@ -14,7 +14,7 @@ version: "3"
 services:
     flask:
       image: stanny880913/yolov5-flask 
-      build: .
+      # build: .
       stdin_open: true
       tty: true
       ports:
