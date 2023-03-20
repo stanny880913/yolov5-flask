@@ -13,8 +13,8 @@
 version: "3"
 services:
     flask:
-      image: yolov5-flask
-      # build: .
+      image: stanny880913/yolov5-flask 
+      build: .
       stdin_open: true
       tty: true
       ports:
@@ -22,6 +22,6 @@ services:
       ipc: host
       privileged: true
       volumes:
-        - /home/stannyho/Documents/yolov5-flask:/workspace
+        - .:/workspace
 
 
