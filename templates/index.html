@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<link href="{{ url_for('static', filename='./icons/StartMenu.ico')}}" rel="SHORTCUT ICON">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<title>Spark Object Detection</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link rel="stylesheet" href="{{ url_for('static', filename='./css/metro-all.min.css')}}">
+
+	<script type="text/javascript" src="{{ url_for('static', filename='./js/jquery-3.3.1.min.js')}}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='./js/metro.min.js')}}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='./js/upload_img.js')}}"></script>
+</head>
+
+<body>
+	<div data-role="appbar" data-expand-point="md" class="bg-dark fg-white">
+		<a href="#" class="brand no-hover">
+			<span class="p-2">W-Link Studio</span>
+		</a>
+	</div>
+	<div class="grid" style="margin-top: 7%">
+		<div class="row">
+			<div class="cell-1"></div>
+			<h5 class="fg-green">Select YOLOv5 model </h5>
+			<div class="cell-11">
+			</div>
+		</div>
+		<div class="row">
+			<div class="cell-1"></div>
+			<div class="cell-11">
+				<select id="model_choice" name="model_choice">
+					{%for i in range(0, len)%}
+					<option>{{listOfKeys[i]}}</option>
+					{%endfor%}
+				</select>
+			</div>
+		</div>
+		<br>
+
+		<div class="row">
+			<div class="cell-1"></div>
+			<div class="cell-11">
+				<h5 class="fg-green">Choose the image of your choice </h5>
+			</div>
+		</div>
+		<div class="row">
+			<div class="cell-1"></div>
+			<div class="cell-11">
+				<!-- <input type="file" name="file" class="form-control-file" id="inputfile" multiple> -->
+
+				<div id="container">
+					<div id="upload_zone" class="upload_zone">
+						請將要上傳的圖片拖曳至此
+					</div>
+					<input type="file" id="fileUploader" class="display_none" name="file"
+						onchange="handleFiles(this.files)" multiple />
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="cell-1"></div>
+			<h5 class="fg-green">辨識結果</h5>
+			<div class="cell-11">
+			</div>
+		</div>
+		<div class="row">
+			<div class="cell-1"></div>
+			<div class="cell-11">
+				<div id="preview"></div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
+
+<script type="text/javascript">
+	// drag && drop upload img
+	const dropbox = document.getElementById("upload_zone");
+	const preview = document.getElementById("preview");
+
+	function handleFileSelect(e) {
+		e.stopPropagation();
+		e.preventDefault();
+		const fileUploader = document.getElementById("fileUploader");
+		fileUploader.click();
+	}
+
+	const click = (e) => handleFileSelect(e);
+
+	// prevent the default method working
+	function dragenter(e) {
+		// add the styling to div
+		dropbox.classList.add("upload_zone_enter");
+		e.stopPropagation();
+		e.preventDefault();
+	}
+
+	const dragleave = () => dropbox.classList.remove("upload_zone_enter");
+
+	// prevent the default method working
+	function dragover(e) {
+		e.stopPropagation();
+		e.preventDefault();
+	}
+	// predict upload img 
+	async function predict_image(file) {
+		const do_predict = function () {
+			return new Promise((resolve, reject) => {
+
+				//creat formdata
+				var formData = new FormData();
+
+				formData.append('file', file);
+				formData.append('model_choice', document.getElementById("model_choice").value);
+				// Create a new XMLHttpRequest object
+				const xhr = new XMLHttpRequest();
+				// Specify the HTTP method and endpoint
+				xhr.open('POST', '/');
+
+				xhr.responseType = 'blob';
+
+				xhr.onreadystatechange = function () {
+					if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+						const imageBlob = xhr.response;
+						const imageURL = URL.createObjectURL(imageBlob);
+						const img = new Image();
+						//set result_img css
+						img.style.margin = '5px';
+						img.style.width = '300px';
+						img.style.height = '200px';
+						img.style.cursor = 'zoom-in';
+						img.style.transition = 'transform 0.5s';
+						//set img iniload event
+						img.onload = function () {
+							preview.appendChild(img);
+							URL.revokeObjectURL(imageURL);
+							resolve();
+						};
+						//set img zoom 
+						img.onclick = function () {
+							img.classList.toggle("zoomed");
+						};
+						img.src = imageURL;
+					}
+				};
+
+				// send formdata
+				xhr.send(formData);
+			});
+		}
+
+		//send img and wait for the predict result
+		await do_predict();
+	}
+
+	async function handleFiles(files) {
+		for (var i = 0; i < files.length; i++) {
+			const file = files[i];
+			const imageType = /image.*/;
+
+			if (!file.type.match(imageType)) {
+				alert("invalid image type!!!");
+				continue;
+			}
+
+			//deal with the img one by one
+			await predict_image(file);
+		}
+	}
+
+	function drop(e) {
+		e.stopPropagation();
+		e.preventDefault();
+
+		const dt = e.dataTransfer;
+		const files = dt.files;
+
+		handleFiles(files);
+		dropbox.classList.remove("upload_zone_enter");
+	}
+
+	dropbox.addEventListener("click", click, false);
+	dropbox.addEventListener("dragenter", dragenter, false);
+	dropbox.addEventListener("dragleave", dragleave, false);
+	dropbox.addEventListener("dragover", dragover, false);
+	dropbox.addEventListener("drop", drop, false);
+</script>
+
+<style>
+	.zoomed {
+		transform: scale(3);
+		/* zoom in the image */
+		cursor: zoom-out;
+		/* change the cursor to a zoom-out icon */
+	}
+
+	.upload_zone {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 300px;
+		height: 200px;
+		border: 2px dashed #cccccc;
+		margin-bottom: 20px;
+		background-color: #ffffff;
+		color: #999999;
+	}
+
+	.upload_zone_enter {
+		border: 10px dashed black;
+		background-clip: content-box;
+	}
+
+	.obj {
+		width: 200px;
+		height: 200px;
+	}
+
+	.display_none {
+		display: none;
+	}
+</style>
