@@ -31,10 +31,7 @@ async function predict_image(file) {
                         // URL.revokeObjectURL(imageURL);
                         resolve();
                     };
-                    //set img zoom
-                    img.onclick = function () {
-                        img.classList.toggle('zoomed');
-                    };
+
                     img.src = imageURL;
 
                     img.onclick = () => {
