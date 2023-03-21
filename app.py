@@ -52,6 +52,7 @@ def predict():
         response = make_response(im_arr.tobytes())
         print("reponse", response)
         response.headers['Content-Type'] = 'image/jpeg'
+    print("response", response)
     return response
 
 def extract_img(request):
@@ -63,7 +64,8 @@ def extract_img(request):
     
     if file.filename == '':
         raise BadRequest("Given file is invalid")
-        
+
+    print("file",file) 
     return file
     
 

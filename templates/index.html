@@ -13,14 +13,23 @@
 
 	<script type="text/javascript" src="{{ url_for('static', filename='./js/jquery-3.3.1.min.js')}}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='./js/metro.min.js')}}"></script>
-	<script type="text/javascript" src="{{ url_for('static', filename='./js/upload_img.js')}}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='./js/detect.js')}}"></script>
+	<!-- <script type="text/javascript" src="{{ url_for('static', filename='./js/upload.js')}}"></script> -->
 </head>
 
 <body>
 	<div data-role="appbar" data-expand-point="md" class="bg-dark fg-white">
-		<a href="#" class="brand no-hover">
-			<span class="p-2">W-Link Studio</span>
-		</a>
+		<!-- <a href="#" class="brand no-hover"> -->
+		<span class="p-5">義大胸腔科</span>
+		<!-- </a> -->
+	</div>
+	<div class="icon-container">
+		<a href="https://www.youtube.com/" target="_blank" title="xx"><img class="icon" src="static/icons/126895-200.png" alt="1"></a>
+		<a href="https://www.youtube.com/" target="_blank" title="xx"><img class="icon" src="static/icons/126895-200.png" alt="2"></a>
+		<a href="https://www.youtube.com/" target="_blank" title="xx"><img class="icon" src="static/icons/126895-200.png" alt="3"></a>
+		<a href="https://www.youtube.com/" target="_blank" title="xx"><img class="icon" src="static/icons/126895-200.png" alt="4"></a>
+		<a href="https://www.youtube.com/" target="_blank" title="xx"><img class="icon" src="static/icons/126895-200.png" alt="5"></a>
+		<!-- add more icons-->
 	</div>
 	<div class="grid" style="margin-top: 7%">
 		<div class="row">
@@ -72,7 +81,12 @@
 			<div class="cell-1"></div>
 			<div class="cell-11">
 				<div id="preview"></div>
+				<div id="myModal" class="modal">
+					<span class="close">X</span>
+					<img class="modal-content" id="img01">
+				</div>
 			</div>
+
 		</div>
 	</div>
 </body>
@@ -80,7 +94,142 @@
 </html>
 
 <script type="text/javascript">
-	// drag && drop upload img
+
+	// 获取dom
+	const container = document.querySelector('.modal');
+	const image = document.getElementById('img01');
+	// 全局变量
+	let result,
+		x,
+		y,
+		scale = 1,
+		minScale = 0.5,
+		maxScale = 4,
+		isPointerdown = false, // 按下标识
+		point = { x: 0, y: 0 }, // 第一个点坐标
+		diff = { x: 0, y: 0 }, // 相对于上一次pointermove移动差值
+		lastPointermove = { x: 0, y: 0 }; // 用于计算diff
+	// 图片加载完成后再绑定事件
+	image.addEventListener('load', function () {
+		result = getImgSize(image.naturalWidth, image.naturalHeight, window.innerWidth, window.innerHeight);
+		image.style.width = result.width + 'px';
+		image.style.height = result.height + 'px';
+		x = (window.innerWidth - result.width) * 0.5;
+		y = (window.innerHeight - result.height) * 0.5;
+		// image.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) scale(1)';
+		// 拖拽查看
+		drag();
+		// 滚轮缩放
+		wheelZoom();
+	});
+
+	/**
+	* 获取图片缩放尺寸
+	* @param {number} naturalWidth 
+	* @param {number} naturalHeight 
+	* @param {number} maxWidth 
+	* @param {number} maxHeight 
+	* @returns 
+	*/
+	function getImgSize(naturalWidth, naturalHeight, maxWidth, maxHeight) {
+		const imgRatio = naturalWidth / naturalHeight;
+		const maxRatio = maxWidth / maxHeight;
+		let width, height;
+		// 如果图片实际宽高比例 >= 显示宽高比例
+		if (imgRatio >= maxRatio) {
+			if (naturalWidth > maxWidth) {
+				width = maxWidth;
+				height = maxWidth / naturalWidth * naturalHeight;
+			} else {
+				width = naturalWidth;
+				height = naturalHeight;
+			}
+		} else {
+			if (naturalHeight > maxHeight) {
+				width = maxHeight / naturalHeight * naturalWidth;
+				height = maxHeight;
+			} else {
+				width = naturalWidth;
+				height = naturalHeight;
+			}
+		}
+		return { width: width, height: height }
+	}
+
+	// 拖拽查看
+	function drag() {
+		// 绑定 pointerdown
+		image.addEventListener('pointerdown', function (e) {
+			isPointerdown = true;
+			image.setPointerCapture(e.pointerId);
+			point = { x: e.clientX, y: e.clientY };
+			lastPointermove = { x: e.clientX, y: e.clientY };
+		});
+		// 绑定 pointermove
+		image.addEventListener('pointermove', function (e) {
+			if (isPointerdown) {
+				const current1 = { x: e.clientX, y: e.clientY };
+				diff.x = current1.x - lastPointermove.x;
+				diff.y = current1.y - lastPointermove.y;
+				lastPointermove = { x: current1.x, y: current1.y };
+				x += diff.x;
+				y += diff.y;
+				image.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) scale(' + scale + ')';
+			}
+			e.preventDefault();
+		});
+		// 绑定 pointerup
+		image.addEventListener('pointerup', function (e) {
+			if (isPointerdown) {
+				isPointerdown = false;
+			}
+		});
+		// 绑定 pointercancel
+		image.addEventListener('pointercancel', function (e) {
+			if (isPointerdown) {
+				isPointerdown = false;
+			}
+		});
+	}
+
+	// 滚轮缩放
+	function wheelZoom() {
+		container.addEventListener('wheel', function (e) {
+			let ratio = 1.1;
+			// 缩小
+			if (e.deltaY > 0) {
+				ratio = 1 / 1.1;
+			}
+			// 限制缩放倍数
+			const _scale = scale * ratio;
+			if (_scale > maxScale) {
+				ratio = maxScale / scale;
+				scale = maxScale;
+			} else if (_scale < minScale) {
+				ratio = minScale / scale;
+				scale = minScale;
+			} else {
+				scale = _scale;
+			}
+			// 目标元素是img说明鼠标在img上，以鼠标位置为缩放中心，否则默认以图片中心点为缩放中心
+			console.log("TagName : ", e.target.tagName);
+			if (e.target.tagName === 'IMG') {
+				console.log("in center!!!!!")
+				const origin = {
+					x: (ratio - 1) * result.width * 0.5,
+					y: (ratio - 1) * result.height * 0.5
+				};
+				// 计算偏移量
+				x -= (ratio - 1) * (e.clientX - x) - origin.x;
+				y -= (ratio - 1) * (e.clientY - y) - origin.y;
+			}
+			image.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) scale(' + scale + ')';
+			e.preventDefault();
+		});
+	}
+
+
+	// // drag && drop upload img
 	const dropbox = document.getElementById("upload_zone");
 	const preview = document.getElementById("preview");
 
@@ -107,56 +256,6 @@
 	function dragover(e) {
 		e.stopPropagation();
 		e.preventDefault();
-	}
-	// predict upload img 
-	async function predict_image(file) {
-		const do_predict = function () {
-			return new Promise((resolve, reject) => {
-
-				//creat formdata
-				var formData = new FormData();
-
-				formData.append('file', file);
-				formData.append('model_choice', document.getElementById("model_choice").value);
-				// Create a new XMLHttpRequest object
-				const xhr = new XMLHttpRequest();
-				// Specify the HTTP method and endpoint
-				xhr.open('POST', '/');
-
-				xhr.responseType = 'blob';
-
-				xhr.onreadystatechange = function () {
-					if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-						const imageBlob = xhr.response;
-						const imageURL = URL.createObjectURL(imageBlob);
-						const img = new Image();
-						//set result_img css
-						img.style.margin = '5px';
-						img.style.width = '300px';
-						img.style.height = '200px';
-						img.style.cursor = 'zoom-in';
-						img.style.transition = 'transform 0.5s';
-						//set img iniload event
-						img.onload = function () {
-							preview.appendChild(img);
-							URL.revokeObjectURL(imageURL);
-							resolve();
-						};
-						//set img zoom 
-						img.onclick = function () {
-							img.classList.toggle("zoomed");
-						};
-						img.src = imageURL;
-					}
-				};
-
-				// send formdata
-				xhr.send(formData);
-			});
-		}
-
-		//send img and wait for the predict result
-		await do_predict();
 	}
 
 	async function handleFiles(files) {
@@ -190,11 +289,42 @@
 	dropbox.addEventListener("dragleave", dragleave, false);
 	dropbox.addEventListener("dragover", dragover, false);
 	dropbox.addEventListener("drop", drop, false);
+
+	document.getElementsByClassName('close')[0].onclick = function () {
+		document.getElementById('myModal').style.display = "none";
+		image.style.transform = "";
+		console.log("style clear")
+	}
+
+	window.onclick = function (event) {
+		if (event.target == document.getElementById('myModal')) {
+			document.getElementById('myModal').style.display = "none";
+			image.style.transform = "";
+			console.log("style clear")
+		}
+	}
+
 </script>
 
 <style>
+	.icon-container {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.icon {
+		width: 50px;
+		height: 50px;
+		margin-top: 70px;
+		margin-left: 50px;
+	}
+
 	.zoomed {
-		transform: scale(3);
+		transform: scale(2);
 		/* zoom in the image */
 		cursor: zoom-out;
 		/* change the cursor to a zoom-out icon */
@@ -225,5 +355,41 @@
 
 	.display_none {
 		display: none;
+	}
+
+	.modal {
+		display: none;
+		position: fixed;
+		z-index: 1;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		background-color: rgba(0, 0, 0, 0.7);
+	}
+
+	.modal-content {
+		position: relative;
+		margin: auto;
+		padding: 20px;
+		width: 60%;
+		display: flex;
+	}
+
+	.close {
+		color: white;
+		position: absolute;
+		top: 8%;
+		right: 20px;
+		font-size: 30px;
+		font-weight: bold;
+		cursor: pointer;
+		z-index: 100;
+	}
+
+	img {
+		width: 100%;
+		height: auto;
 	}
 </style>
