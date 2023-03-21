@@ -1,5 +1,6 @@
 # Build Image from Docker Hub
 # If you haven't build image,please remark build .
+# then docker compose up 
 version: "3"
 services:
   flask:
