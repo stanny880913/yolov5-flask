@@ -1,14 +1,3 @@
-# version: "3"
-# services:
-#   flask:
-#     image: yolov5-flask:latest
-#     ports:
-#       - 5000:5000
-#     restart: unless-stopped
-#     volumes:
-#       - ./yolov5-flask:/app.py
-#       - ./yolov5-flask/templates:/templates
-
 # build Image from Docker Hub
 version: "3"
 services:
