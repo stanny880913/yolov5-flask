@@ -1,16 +1,15 @@
-# build Image from Docker Hub
+# Build Image from Docker Hub
+# If you haven't build image,please remark build .
 version: "3"
 services:
-    flask:
-      image: stanny880913/yolov5-flask 
-      # build: .
-      stdin_open: true
-      tty: true
-      ports:
-        - 5000:5000
-      ipc: host
-      privileged: true
-      volumes:
-        - .:/workspace
-
-
+  flask:
+    image: stanny880913/yolov5-flask
+    # build: .
+    stdin_open: true
+    tty: true
+    ports:
+      - 5000:5000
+    ipc: host
+    privileged: true
+    volumes:
+      - .:/workspace
