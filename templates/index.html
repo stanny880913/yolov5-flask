@@ -12,11 +12,15 @@
 	<link rel="stylesheet" href="{{ url_for('static', filename='./css/metro-all.min.css')}}">
 
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 	<script type="text/javascript" src="{{ url_for('static', filename='./js/jquery-3.3.1.min.js')}}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='./js/metro.min.js')}}"></script>
 	<script type="text/javascript" src="{{ url_for('static', filename='./js/detect.js')}}"></script>
 	<!-- <script type="text/javascript" src="{{ url_for('static', filename='./js/upload.js')}}"></script> -->
 </head>
+
+//TODO 點擊重新整理頁面時跳alert問說確定是否要重整，因為會刷新所有照片變成空的
 
 <body>
 	<div data-role="appbar" data-expand-point="md" class="bg-dark fg-white">
@@ -96,6 +100,13 @@
 
 		</div>
 	</div>
+
+	<div class="container">
+		<img id="image" alt="">
+	</div>
+	<div class="log"></div>
+
+
 </body>
 
 </html>
@@ -233,6 +244,7 @@
 	// }
 	// function wheelZoom() {
 
+	//modal drag/drop and zoom in/out
 	$(document).ready(function () {
 		let scale = 1;
 		let dragging = false;
@@ -337,7 +349,11 @@
 			const imageType = /image.*/;
 
 			if (!file.type.match(imageType)) {
-				alert("invalid image type!!!");
+				swal({
+					title: "Invalid Type",
+					text:"You can only upload image",
+					icon: "error"
+				});
 				continue;
 			}
 
