@@ -20,8 +20,6 @@
 	<!-- <script type="text/javascript" src="{{ url_for('static', filename='./js/upload.js')}}"></script> -->
 </head>
 
-//TODO 點擊重新整理頁面時跳alert問說確定是否要重整，因為會刷新所有照片變成空的
-
 <body>
 	<div data-role="appbar" data-expand-point="md" class="bg-dark fg-white">
 		<!-- <a href="#" class="brand no-hover"> -->
@@ -42,207 +40,100 @@
 			target="_blank" title="5"><img class="icon" src="static/icons/dog.png" alt="5"></a>
 		<!-- add more icons-->
 	</div>
+
+
 	<div class="grid" style="margin-top: 7%">
+
 		<div class="row">
 			<div class="cell-1"></div>
 			<h5 class="fg-green">Select YOLOv5 model </h5>
-			<div class="cell-11">
-			</div>
 		</div>
-		<div class="row">
-			<div class="cell-1"></div>
-			<div class="cell-11">
-				<select id="model_choice" name="model_choice">
-					{%for i in range(0, len)%}
-					<option>{{listOfKeys[i]}}</option>
-					{%endfor%}
-				</select>
-			</div>
-		</div>
-		<br>
+	</div>
+	<div class="row">
+		<div class="cell-1"></div>
+		<select id="model_choice" name="model_choice">
+			{%for i in range(0, len)%}
+			<option>{{listOfKeys[i]}}</option>
+			{%endfor%}
+		</select>
+	</div>
+	<br>
 
-		<div class="row">
-			<div class="cell-1"></div>
-			<div class="cell-11">
-				<h5 class="fg-green">Choose the image of your choice </h5>
-			</div>
-		</div>
-		<div class="row">
-			<div class="cell-1"></div>
-			<div class="cell-11">
-				<!-- <input type="file" name="file" class="form-control-file" id="inputfile" multiple> -->
-
-				<div id="container">
-					<div id="upload_zone" class="upload_zone">
-						請將要上傳的圖片拖曳至此
-					</div>
-					<input type="file" id="fileUploader" class="display_none" name="file"
-						onchange="handleFiles(this.files)" multiple />
-				</div>
-			</div>
-		</div>
-
-		<div class="row">
-			<div class="cell-1"></div>
-			<h5 class="fg-green">辨識結果</h5>
-			<div class="cell-11">
-			</div>
-		</div>
-		<div class="row">
-			<div class="cell-1"></div>
-			<div class="cell-11">
-				<div id="preview"></div>
-				<div id="myModal" class="modal">
-					<span class="close">X</span>
-					<img class="modal-content" id="img01">
-				</div>
-			</div>
+	<div class="row">
+		<div class="cell-1"></div>
+		<div class="cell-11">
+			<h5 class="fg-green">Choose the image of your choice </h5>
 
 		</div>
 	</div>
+	<div class="row">
+		<div class="cell-1"></div>
+		<div class="cell-11">
+			<!-- <input type="file" name="file" class="form-control-file" id="inputfile" multiple> -->
 
-	<div class="container">
-		<img id="image" alt="">
+			<div id="container">
+				<div id="upload_zone" class="upload_zone">
+					請將要上傳的圖片拖曳至此
+				</div>
+				<input type="file" id="fileUploader" class="display_none" name="file" onchange="handleFiles(this.files)"
+					multiple />
+			</div>
+		</div>
 	</div>
-	<div class="log"></div>
 
+	<div class="row">
+		<div class="cell-1"></div>
+		<h5 class="fg-green">辨識結果</h5>
+		<button class="button" style="vertical-align:middle" onclick="refreshPage()">
+			<span>Clear All</span>
+		</button>
+		<div class="cell-11">
+		</div>
+	</div>
 
+	<div class="row">
+		<div class="cell-1"></div>
+		<div class="cell-11">
+			<div id="preview" class="preview-container"></div>
+			<div id="myModal" class="modal">
+				<span class="close">X</span>
+				<img class="modal-content" id="img_list">
+			</div>
+		</div>
+	</div>
+	</div>
 </body>
 
 </html>
 
 <script type="text/javascript">
-	// TODO 以滑鼠為中心做縮放，現在會亂跳(拖曳也是)，無法以滑鼠中心做縮放
-	// // 获取dom
-	// const container = document.querySelector('.modal');
-	// const image = document.getElementById('img01');
-	// // 全局变量
-	// let result,
-	// 	x,
-	// 	y,
-	// 	scale = 1,
-	// 	minScale = 0.5,
-	// 	maxScale = 4,
-	// 	isPointerdown = false, // 按下标识
-	// 	point = { x: 0, y: 0 }, // 第一个点坐标
-	// 	diff = { x: 0, y: 0 }, // 相对于上一次pointermove移动差值
-	// 	lastPointermove = { x: 0, y: 0 }; // 用于计算diff
-	// // 图片加载完成后再绑定事件
-	// image.addEventListener('load', function () {
-	// 	result = getImgSize(image.naturalWidth, image.naturalHeight, window.innerWidth, window.innerHeight);
-	// 	image.style.width = result.width + 'px';
-	// 	image.style.height = result.height + 'px';
-	// 	x = (window.innerWidth - result.width) * 0.5;
-	// 	y = (window.innerHeight - result.height) * 0.5;
-	// 	// image.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) scale(1)';
-	// 	// 拖拽查看
-	// 	drag();
-	// 	// 滚轮缩放
-	// 	wheelZoom();
-	// });
-	// /**
-	// * 获取图片缩放尺寸
-	// * @param {number} naturalWidth 
-	// * @param {number} naturalHeight 
-	// * @param {number} maxWidth 
-	// * @param {number} maxHeight 
-	// * @returns 
-	// */
-	// function getImgSize(naturalWidth, naturalHeight, maxWidth, maxHeight) {
-	// 	const imgRatio = naturalWidth / naturalHeight;
-	// 	const maxRatio = maxWidth / maxHeight;
-	// 	let width, height;
-	// 	// 如果图片实际宽高比例 >= 显示宽高比例
-	// 	if (imgRatio >= maxRatio) {
-	// 		if (naturalWidth > maxWidth) {
-	// 			width = maxWidth;
-	// 			height = maxWidth / naturalWidth * naturalHeight;
-	// 		} else {
-	// 			width = naturalWidth;
-	// 			height = naturalHeight;
-	// 		}
-	// 	} else {
-	// 		if (naturalHeight > maxHeight) {
-	// 			width = maxHeight / naturalHeight * naturalWidth;
-	// 			height = maxHeight;
-	// 		} else {
-	// 			width = naturalWidth;
-	// 			height = naturalHeight;
-	// 		}
-	// 	}
-	// 	return { width: width, height: height }
-	// }
 
-	// // 拖拽查看
-	// function drag() {
-	// 	// 绑定 pointerdown
-	// 	image.addEventListener('pointerdown', function (e) {
-	// 		isPointerdown = true;
-	// 		image.setPointerCapture(e.pointerId);
-	// 		point = { x: e.clientX, y: e.clientY };
-	// 		lastPointermove = { x: e.clientX, y: e.clientY };
-	// 	});
-	// 	// 绑定 pointermove
-	// 	image.addEventListener('pointermove', function (e) {
-	// 		if (isPointerdown) {
-	// 			const current1 = { x: e.clientX, y: e.clientY };
-	// 			diff.x = current1.x - lastPointermove.x;
-	// 			diff.y = current1.y - lastPointermove.y;
-	// 			lastPointermove = { x: current1.x, y: current1.y };
-	// 			x += diff.x;
-	// 			y += diff.y;
-	// 			image.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) scale(' + scale + ')';
-	// 		}
-	// 		e.preventDefault();
-	// 	});
-	// 	// 绑定 pointerup
-	// 	image.addEventListener('pointerup', function (e) {
-	// 		if (isPointerdown) {
-	// 			isPointerdown = false;
-	// 		}
-	// 	});
-	// 	// 绑定 pointercancel
-	// 	image.addEventListener('pointercancel', function (e) {
-	// 		if (isPointerdown) {
-	// 			isPointerdown = false;
-	// 		}
-	// 	});
-	// }
 
-	// 滚轮缩放
-	// function wheelZoom() {
-	// 	container.addEventListener('wheel', function (e) {
-	// 		let ratio = 1.1;
-	// 		// 缩小
-	// 		if (e.deltaY > 0) {
-	// 			ratio = 1 / 1.1;
-	// 		}
-	// 		// 限制缩放倍数
-	// 		const _scale = scale * ratio;
-	// 		if (_scale > maxScale) {
-	// 			ratio = maxScale / scale;
-	// 			scale = maxScale;
-	// 		} else if (_scale < minScale) {
-	// 			ratio = minScale / scale;
-	// 			scale = minScale;
-	// 		} else {
-	// 			scale = _scale;
-	// 		}
-	// 		// 目标元素是img说明鼠标在img上，以鼠标位置为缩放中心，否则默认以图片中心点为缩放中心
-	// 		if (e.target.tagName === 'IMG') {
-	// 			const origin = {
-	// 				x: (ratio - 1) * result.width * 0.1,
-	// 				y: (ratio - 1) * result.height * 0.1
-	// 			};
-	// 			// 计算偏移量
-	// 			x -= (ratio - 1) * (e.clientX - x) - origin.x;
-	// 			y -= (ratio - 1) * (e.clientY - y) - origin.y;
-	// 		}
-	// 		image.style.transform = 'translate3d(' + x + 'px, ' + y + 'px, 0) scale(' + scale + ')';
-	// 		e.preventDefault();
-	// 	});
-	// }
-	// function wheelZoom() {
+	//選擇是否要刷新網頁
+	function refreshPage() {
+		swal({
+			title: "Are you sure?",
+			icon: "warning",
+			buttons: {
+				cancel: {
+					text: "Cancel",
+					visible: true
+				},
+				danger: {
+					text: "OK",
+					value: "OK",
+					visibal: true
+				}
+
+			}
+		}).then((value) => {
+			if (value == "OK") {
+				location.reload();
+			}
+
+		});
+
+	}
 
 	//modal drag/drop and zoom in/out
 	$(document).ready(function () {
@@ -310,9 +201,6 @@
 			});
 		});
 	});
-	// }
-
-
 
 	// // drag && drop upload img
 	const dropbox = document.getElementById("upload_zone");
@@ -351,7 +239,7 @@
 			if (!file.type.match(imageType)) {
 				swal({
 					title: "Invalid Type",
-					text:"You can only upload image",
+					text: "You can only upload image",
 					icon: "error"
 				});
 				continue;
@@ -359,7 +247,9 @@
 
 			//deal with the img one by one
 			await predict_image(file);
+
 		}
+		fileUploader.value = "";
 	}
 
 	function drop(e) {
@@ -381,14 +271,14 @@
 
 	document.getElementsByClassName('close')[0].onclick = function () {
 		document.getElementById('myModal').style.display = "none";
-		document.getElementById("img01").style = "";
+		document.getElementById("img_list").style = "";
 		console.log("style clear")
 	}
 
 	window.onclick = function (event) {
 		if (event.target == document.getElementById('myModal')) {
 			document.getElementById('myModal').style.display = "none";
-			document.getElementById("img01").style = "";
+			document.getElementById("img_list").style = "";
 			console.log("style clear")
 		}
 	}
@@ -396,6 +286,75 @@
 </script>
 
 <style>
+	.preview-container {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.image-container {
+		position: relative;
+		margin: 10px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		border-radius: 5px;
+		overflow: hidden;
+	}
+
+	.delete-button {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		background-color: rgba(255, 0, 0, 0.6);
+		color: white;
+		cursor: pointer;
+		border: none;
+		border-radius: 50%;
+		width: 25px;
+		height: 25px;
+		font-size: 16px;
+		line-height: 22px;
+		text-align: center;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		transition: all 0.3s ease;
+	}
+
+	.delete-button:hover {
+		background-color: rgba(255, 0, 0, 0.8);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+	}
+
+	.button {
+		width: 130px;
+		height: 40px;
+		line-height: 42px;
+		padding: 0;
+		border: none;
+		background: rgb(255, 27, 0);
+		background: linear-gradient(0deg, rgba(255, 27, 0, 1) 0%, rgba(251, 75, 2, 1) 100%);
+		border: 0;
+		border-radius:10px;
+	}
+
+	.button:hover {
+		color: #000000;
+		background: transparent;
+		box-shadow: none;
+		border: 0;
+		border-radius:10px;
+	}
+
+	.button:after {
+		right: inherit;
+		top: inherit;
+		left: 0;
+	}
+
+	.button:hover:before,
+	.button:hover:after {
+		width: 100%;
+		transition: 800ms ease all;
+	}
+
+
 	.icon-list {
 		position: absolute;
 		top: 10px;
@@ -471,10 +430,5 @@
 		font-weight: bold;
 		cursor: pointer;
 		z-index: 100;
-	}
-
-	img {
-		width: 100%;
-		height: auto;
 	}
 </style>
