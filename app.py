@@ -9,12 +9,11 @@ import os
 
 
 # creating flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 # create a python dictionary for your models d = {<key>: <value>, <key>: <value>, ..., <key>: <value>}
 dictOfModels = {}
 # create a list of keys to use them in the select part of the html code
 listOfKeys = []
-
 
 # @app.route('/', methods=['POST'])
 # def get_results(img_bytes, model):
