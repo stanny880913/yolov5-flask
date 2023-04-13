@@ -1,16 +1,21 @@
-# Build Image from Docker Hub
-# If you haven't build image,please remark build .
-# then docker compose up 
-version: "3"
+version: '3'
+
 services:
-  flask:
-    image: stanny880913/yolov5-flask:1.0.0
-    # build: .
-    stdin_open: true
-    tty: true
+  flask_app:
+    container_name: flask_app
+    restart: always
+    build: ./flask_app
     ports:
       - 5000:5000
-    ipc: host
-    privileged: true
+    command: gunicorn -w 1 -b 0.0.0.0:5000 app:app
+
+  nginx:
+    container_name: nginx
+    restart: always
+    build: ./nginx
+    ports:
+      - 80:80
+    depends_on:
+      - flask_app
     volumes:
-      - .:/workspace
+      - ./flask_app/static:/etc/nginx/static

@@ -2,4 +2,4 @@
 .config
 yolov5-flask
 images
-weights/*.pt
+flask_app/weights/*.pt
