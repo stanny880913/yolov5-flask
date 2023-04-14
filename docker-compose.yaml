@@ -7,7 +7,9 @@ services:
     build: ./flask_app
     ports:
       - 5000:5000
-    command: gunicorn -w 1 --log-file=- -b 0.0.0.0:5000 app:app
+    command: gunicorn -w 1 --log-level=debug  -b 0.0.0.0:5000 app:app
+    volumes:
+      - .:/root
 
   nginx:
     container_name: nginx

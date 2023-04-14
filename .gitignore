@@ -3,3 +3,4 @@
 yolov5-flask
 images
 flask_app/weights/*.pt
+.*
