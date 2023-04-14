@@ -51,6 +51,9 @@ def get_prediction(img_bytes, model):
 # get method
 @app.route('/', methods=['GET'])
 def get():
+    app.logger.debug("I'm a DEBUG message")  # TODO just for test
+    load_model()
+
     # in the select we will have each key of the list in option
     return render_template("index.html", len=len(listOfKeys), listOfKeys=listOfKeys)
 
@@ -98,7 +101,6 @@ if __name__ != '__main__':
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 
-load_model()
 if __name__ == '__main__':
     # starting app
     app.run(debug=True, host='0.0.0.0')
