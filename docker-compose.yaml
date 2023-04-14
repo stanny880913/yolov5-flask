@@ -1,8 +1,8 @@
-version: '3'
+version: "3"
 
 services:
   flask_app:
-    container_name: flask_app
+    image: yolov5-flask-flask_app
     restart: always
     # build: ./flask_app
     ports:
@@ -12,7 +12,7 @@ services:
       - .:/root
 
   nginx:
-    container_name: nginx
+    image: yolov5-flask-nginx
     restart: always
     # build: ./nginx
     ports:
