@@ -4,7 +4,7 @@ services:
   flask_app:
     container_name: flask_app
     restart: always
-    build: ./flask_app
+    # build: ./flask_app
     ports:
       - 5000:5000
     command: gunicorn -w 1 --log-level=debug  -b 0.0.0.0:5000 app:app
@@ -14,7 +14,7 @@ services:
   nginx:
     container_name: nginx
     restart: always
-    build: ./nginx
+    # build: ./nginx
     ports:
       - 80:80
     depends_on:

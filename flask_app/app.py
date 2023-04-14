@@ -99,6 +99,4 @@ if __name__ != '__main__':
     app.logger.setLevel(gunicorn_logger.level)
 
 load_model()
-if __name__ == '__main__':
-    # starting app
-    app.run(debug=True, host='0.0.0.0')
+
