@@ -19,6 +19,28 @@ listOfKeys = []
 # inference fonction
 
 
+def load_model():
+    models_directory = '/usr/src/flask_app/weights'
+    # if len(sys.argv) > 1:
+    #     models_directory = sys.argv[1]
+    app.logger.debug(
+        f'Detecting for yolov5 models under {models_directory}...')
+    for r, d, f in os.walk(models_directory):
+        for file in f:
+            if ".pt" in file:
+                # example: file = "model1.pt"
+                # the path of each model: os.path.join(r, file)
+                model_name = os.path.splitext(file)[0]
+                model_path = os.path.join(r, file)
+                app.logger.debug(
+                    f'Loading model {model_path} with path {model_path}...')
+                dictOfModels[model_name] = torch.hub.load(
+                    'ultralytics/yolov5', 'custom', path=model_path)
+                # you would obtain: dictOfModels = {"model1" : model1 , etc}
+        for key in dictOfModels:
+            listOfKeys.append(key)  # put all the keys in the listOfKeys
+
+
 def get_prediction(img_bytes, model):
     img = Image.open(io.BytesIO(img_bytes))
     # inference
@@ -29,7 +51,8 @@ def get_prediction(img_bytes, model):
 # get method
 @app.route('/', methods=['GET'])
 def get():
-    app.logger.debug("I'm a DEBUG message")#TODO just for test
+    app.logger.debug("I'm a DEBUG message")  # TODO just for test
+    load_model()
 
     # in the select we will have each key of the list in option
     return render_template("index.html", len=len(listOfKeys), listOfKeys=listOfKeys)
@@ -80,25 +103,4 @@ if __name__ != '__main__':
 
 if __name__ == '__main__':
     # starting app
-    app.logger.debug('Starting yolov5 webservice...')
-    # Getting directory containing models from command args (or default 'models_train')
-    models_directory = './weights/best.pt'
-    if len(sys.argv) > 1:
-        models_directory = sys.argv[1]
-    app.logger.debug(
-        f'Detecting for yolov5 models under {models_directory}...')
-    for r, d, f in os.walk(models_directory):
-        for file in f:
-            if ".pt" in file:
-                # example: file = "model1.pt"
-                # the path of each model: os.path.join(r, file)
-                model_name = os.path.splitext(file)[0]
-                model_path = os.path.join(r, file)
-                app.logger.debug(
-                    f'Loading model {model_path} with path {model_path}...')
-                dictOfModels[model_name] = torch.hub.load(
-                    'ultralytics/yolov5', 'custom', path=model_path)
-                # you would obtain: dictOfModels = {"model1" : model1 , etc}
-        for key in dictOfModels:
-            listOfKeys.append(key)  # put all the keys in the listOfKeys
     app.run(debug=True, host='0.0.0.0')
