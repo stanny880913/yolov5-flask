@@ -2,7 +2,7 @@ version: "3"
 
 services:
   flask_app:
-    image: yolov5-flask-flask_app
+    image: stanny880913/flask_app
     restart: always
     # build: ./flask_app
     ports:
@@ -12,7 +12,7 @@ services:
       - .:/root
 
   nginx:
-    image: yolov5-flask-nginx
+    image: stanny880913/flask_nginx 
     restart: always
     # build: ./nginx
     ports:
