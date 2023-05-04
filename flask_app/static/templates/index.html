@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<link href="{{ url_for('static', filename='./icons/StartMenu.ico')}}" rel="SHORTCUT ICON">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta charset="utf-8">
+	<title>Frac See</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link rel="stylesheet" href="{{ url_for('static', filename='./css/metro-all.min.css')}}">
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+	<script type="text/javascript" src="{{ url_for('static', filename='./js/jquery-3.3.1.min.js')}}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='./js/metro.min.js')}}"></script>
+	<script type="text/javascript" src="{{ url_for('static', filename='./js/detect.js')}}"></script>
+	<!-- <script type="text/javascript" src="{{ url_for('static', filename='./js/upload.js')}}"></script> -->
+</head>
+
+<body>
+	<div data-role="appbar" data-expand-point="md" class="bg-dark fg-white">
+		<!-- <a href="#" class="brand no-hover"> -->
+		<span class="p-5" style="font-size:20px">Frac See</span>
+		<!-- </a> -->
+	</div>
+
+	<div class="icon-list">
+		<a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtKeqodCE7HHO-zBusjlPU5PRDtV-jxDLaroDmWaQ1TXuXci8BNly-JOaF9lVVOp8LzJI&usqp=CAU"
+			target="_blank" title="1"><img class="icon" src="static/icons/dog.png" alt="1"></a>
+		<a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5W2qWDdF7ztjYI9lL_odxd3LY3uv8BOI9Ug&usqp=CAU"
+			target="_blank" title="2"><img class="icon" src="static/icons/dog.png" alt="2"></a>
+		<a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRufSNXoTgH8UEjjohsVj78DP3xTHv71A2q-Q&usqp=CAU"
+			target="_blank" title="3"><img class="icon" src="static/icons/dog.png" alt="3"></a>
+		<a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4E9bNGpoShArAVnXSYOyFODZ4_JnoU1W3Mg&usqp=CAU"
+			target="_blank" title="4"><img class="icon" src="static/icons/dog.png" alt="4"></a>
+		<a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLqzNBGsnRekoIgF6bcAoSc00MuPhaSP7bhw&usqp=CAU"
+			target="_blank" title="5"><img class="icon" src="static/icons/dog.png" alt="5"></a>
+		<!-- add more icons-->
+	</div>
+
+
+	<div class="grid" style="margin-top: 7%">
+
+		<div class="row">
+			<div class="cell-1"></div>
+			<h5 class="fg-green">Select YOLOv5 model</h5>
+		</div>
+	</div>
+	<div class="row">
+		<div class="cell-1"></div>
+		<select id="model_choice" name="model_choice">
+			{%for i in range(0, len)%}
+			<option>{{listOfKeys[i]}}</option>
+			{%endfor%}
+		</select>
+	</div>
+	<br>
+
+	<div class="row">
+		<div class="cell-1"></div>
+		<div class="cell-11">
+			<h5 class="fg-green">Choose the image of your choice </h5>
+
+		</div>
+	</div>
+	<div class="row">
+		<div class="cell-1"></div>
+		<div class="cell-11">
+			<!-- <input type="file" name="file" class="form-control-file" id="inputfile" multiple> -->
+
+			<div id="container">
+				<div id="upload_zone" class="upload_zone">
+					請將要上傳的圖片拖曳至此
+				</div>
+				<input type="file" id="fileUploader" class="display_none" name="file" onchange="handleFiles(this.files)"
+					multiple />
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="cell-1"></div>
+		<h5 class="fg-green">辨識結果</h5>
+		<button class="button" style="vertical-align:middle" onclick="refreshPage()">
+			<span>Clear All</span>
+		</button>
+		<div class="cell-11">
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="cell-1"></div>
+		<div class="cell-11">
+			<div id="preview" class="preview-container"></div>
+			<div id="myModal" class="modal">
+				<span class="close">X</span>
+				<img class="modal-content" id="img_list">
+			</div>
+		</div>
+	</div>
+	</div>
+</body>
+
+</html>
+
+<script type="text/javascript">
+
+	//選擇是否要清除所有照片(目前為刷新網頁)
+	function refreshPage() {
+		swal({
+			title: "Are you sure?",
+			icon: "warning",
+			buttons: {
+				cancel: {
+					text: "Cancel",
+					visible: true
+				},
+				danger: {
+					text: "OK",
+					value: "OK",
+					visibal: true
+				}
+
+			}
+		}).then((value) => {
+			if (value == "OK") {
+				location.reload();
+			}
+
+		});
+
+	}
+
+	//modal drag/drop and zoom in/out
+	$(document).ready(function () {
+		let scale = 1;
+		let dragging = false;
+		let mouseX = 0;
+		let mouseY = 0;
+		let imgX = 0;
+		let imgY = 0;
+
+		const imageContainer = $(".modal");
+		const image = $(".modal-content");
+
+		imageContainer.on("mousedown", function (e) {
+			dragging = true;
+			mouseX = e.clientX;
+			mouseY = e.clientY;
+			imgX = parseInt(image.css("left"));
+			imgY = parseInt(image.css("top"));
+		});
+
+		$(document).on("mousemove", function (e) {
+			if (!dragging) return;
+			e.preventDefault();
+
+			let deltaX = e.clientX - mouseX;
+			let deltaY = e.clientY - mouseY;
+
+			image.css({
+				left: imgX + deltaX,
+				top: imgY + deltaY
+			});
+		});
+
+		$(document).on("mouseup", function () {
+			dragging = false;
+		});
+
+		imageContainer.on("wheel", function (e) {
+			e.preventDefault();
+
+			let oldScale = scale;
+
+			if (e.originalEvent.deltaY < 0) {
+				scale += 0.1;
+			} else {
+				scale -= 0.1;
+				scale = Math.max(scale, 1);
+			}
+
+			let mouseXRelativeToImage = e.clientX - image.offset().left;
+			let mouseYRelativeToImage = e.clientY - image.offset().top;
+
+			let imgX = parseFloat(image.css("left"));
+			let imgY = parseFloat(image.css("top"));
+
+			let newLeft = imgX - mouseXRelativeToImage * (scale - oldScale);
+			let newTop = imgY - mouseYRelativeToImage * (scale - oldScale);
+
+			image.css({
+				transform: `scale(${scale})`,
+				left: newLeft,
+				top: newTop,
+				transformOrigin: "0 0"
+			});
+		});
+	});
+
+	// // drag && drop upload img
+	const dropbox = document.getElementById("upload_zone");
+	const preview = document.getElementById("preview");
+
+	function handleFileSelect(e) {
+		e.stopPropagation();
+		e.preventDefault();
+		const fileUploader = document.getElementById("fileUploader");
+		fileUploader.click();
+	}
+
+	const click = (e) => handleFileSelect(e);
+
+	// prevent the default method working
+	function dragenter(e) {
+		// add the styling to div
+		dropbox.classList.add("upload_zone_enter");
+		e.stopPropagation();
+		e.preventDefault();
+	}
+
+	const dragleave = () => dropbox.classList.remove("upload_zone_enter");
+
+	// prevent the default method working
+	function dragover(e) {
+		e.stopPropagation();
+		e.preventDefault();
+	}
+
+	async function handleFiles(files) {
+		for (var i = 0; i < files.length; i++) {
+			const file = files[i];
+			const imageType = /image.*/;
+
+			if (!file.type.match(imageType)) {
+				swal({
+					title: "Invalid Type",
+					text: "You can only upload image",
+					icon: "error"
+				});
+				continue;
+			}
+
+			//deal with the img one by one
+			await predict_image(file);
+
+		}
+		fileUploader.value = "";
+	}
+
+	function drop(e) {
+		e.stopPropagation();
+		e.preventDefault();
+
+		const dt = e.dataTransfer;
+		const files = dt.files;
+
+		handleFiles(files);
+		dropbox.classList.remove("upload_zone_enter");
+	}
+
+	dropbox.addEventListener("click", click, false);
+	dropbox.addEventListener("dragenter", dragenter, false);
+	dropbox.addEventListener("dragleave", dragleave, false);
+	dropbox.addEventListener("dragover", dragover, false);
+	dropbox.addEventListener("drop", drop, false);
+
+	document.getElementsByClassName('close')[0].onclick = function () {
+		document.getElementById('myModal').style.display = "none";
+		document.getElementById("img_list").style = "";
+		console.log("style clear")
+	}
+
+	window.onclick = function (event) {
+		if (event.target == document.getElementById('myModal')) {
+			document.getElementById('myModal').style.display = "none";
+			document.getElementById("img_list").style = "";
+			console.log("style clear")
+		}
+	}
+
+</script>
+
+<style>
+	.preview-container {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.image-container {
+		position: relative;
+		margin: 10px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		border-radius: 5px;
+		overflow: hidden;
+	}
+
+	.delete-button {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		background-color: rgba(255, 0, 0, 0.6);
+		color: white;
+		cursor: pointer;
+		border: none;
+		border-radius: 50%;
+		width: 25px;
+		height: 25px;
+		font-size: 16px;
+		line-height: 22px;
+		text-align: center;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		transition: all 0.3s ease;
+	}
+
+	.delete-button:hover {
+		background-color: rgba(255, 0, 0, 0.8);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+	}
+
+	.button {
+		width: 130px;
+		height: 40px;
+		line-height: 42px;
+		padding: 0;
+		border: none;
+		background: rgb(134, 37, 26);
+		background: linear-gradient(0deg, rgba(255, 27, 0, 1) 0%, rgba(251, 75, 2, 1) 100%);
+		border: 0;
+		border-radius: 10px;
+		left: 20px;
+	}
+
+	.button:hover {
+		color: #000000;
+		background: transparent;
+		background-color: rgb(153, 0, 0);
+		box-shadow: none;
+		border: 0;
+		border-radius: 10px;
+	}
+
+	.button:after {
+		right: inherit;
+		top: inherit;
+		left: 0;
+	}
+
+	.button:hover:before,
+	.button:hover:after {
+		width: 100%;
+		transition: 800ms ease all;
+	}
+
+
+	.icon-list {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.icon {
+		width: 50px;
+		height: 50px;
+		margin-top: 70px;
+		margin-left: 50px;
+	}
+
+	.upload_zone {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 300px;
+		height: 200px;
+		border: 2px dashed #cccccc;
+		margin-bottom: 20px;
+		background-color: #ffffff;
+		color: #999999;
+		cursor: pointer;
+	}
+
+	.upload_zone_enter {
+		border: 10px dashed black;
+		background-clip: content-box;
+	}
+
+	.obj {
+		width: 200px;
+		height: 200px;
+	}
+
+	.display_none {
+		display: none;
+	}
+
+	.modal {
+		display: none;
+		position: fixed;
+		z-index: 1;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		overflow: auto;
+		background-color: rgba(0, 0, 0, 0.7);
+	}
+
+	.modal-content {
+		position: relative;
+		margin: auto;
+		padding: 70px;
+		width: 800px;
+		height: 1000px;
+		display: flex;
+		cursor: move;
+	}
+
+	.close {
+		color: white;
+		position: absolute;
+		top: 8%;
+		right: 20px;
+		font-size: 30px;
+		font-weight: bold;
+		cursor: pointer;
+		z-index: 100;
+	}
+</style>
